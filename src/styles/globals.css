@@ -1,0 +1,702 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 14px;
+  
+  /* University of Mpumalanga Brand Colors from Logo */
+  --ump-navy: #2c5273;           /* Navy blue from logo shield/text */
+  --ump-blue: #2c5273;           /* Primary navy blue */
+  --ump-light-blue: #4a7a9d;     /* Lighter navy variant */
+  --ump-sky: #5a8aad;            /* Sky blue variant */
+  --ump-cyan: #6a9abd;           /* Cyan blue variant */
+  --ump-blue-50: #f0f5f9;        /* Very light blue */
+  --ump-blue-100: #e1ebf3;       /* Light blue */
+  --ump-blue-200: #c3d7e7;       /* Lighter blue */
+  --ump-blue-500: #4a7a9d;       /* Standard blue */
+  --ump-blue-600: #3d6684;       /* Darker blue */
+  --ump-blue-700: #30526b;       /* Deep blue */
+  --ump-blue-800: #2c5273;       /* Very deep blue */
+  --ump-blue-900: #243e52;       /* Darkest navy blue */
+  
+  /* University of Mpumalanga Accent Colors from Logo */
+  --ump-orange: #f59e0b;         /* Modern golden orange */
+  --ump-green: #10b981;          /* Modern emerald green */
+  --ump-red: #ef4444;            /* Modern red */
+  --ump-white: #ffffff;
+  --ump-light-gray: #f8fafc;
+  --ump-gray: #64748b;
+
+  /* Modern Color Palette */
+  --ump-purple: #8b5cf6;         /* Modern purple accent */
+  --ump-pink: #ec4899;           /* Modern pink accent */
+  --ump-indigo: #6366f1;         /* Modern indigo */
+  --ump-slate: #64748b;          /* Modern slate */
+  
+  /* Core Colors - Solid backgrounds for better performance */
+  --background: #f8fafc;
+  --background-solid: #f8fafc;
+  --foreground: var(--ump-navy);
+  --card: var(--ump-white);
+  --card-foreground: var(--ump-navy);
+  --popover: var(--ump-white);
+  --popover-foreground: var(--ump-navy);
+  
+  /* Primary - Navy Blue (for all buttons) */
+  --primary: var(--ump-navy);
+  --primary-foreground: var(--ump-white);
+  
+  /* Secondary - Light blue tones */
+  --secondary: var(--ump-blue-50);
+  --secondary-foreground: var(--ump-blue-700);
+  
+  /* Muted - Soft blue grays */
+  --muted: var(--ump-blue-100);
+  --muted-foreground: var(--ump-blue-600);
+  
+  /* Accent - Beautiful sky blue */
+  --accent: var(--ump-sky);
+  --accent-foreground: var(--ump-white);
+  
+  /* Destructive - UMP Red */
+  --destructive: var(--ump-red);
+  --destructive-foreground: var(--ump-white);
+  
+  /* Borders and inputs with blue tints */
+  --border: rgba(37, 99, 235, 0.2);
+  --input: var(--ump-blue-50);
+  --input-background: var(--ump-blue-50);
+  --switch-background: var(--ump-blue-200);
+  
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: var(--ump-blue);
+  
+  /* Charts - Beautiful blue palette */
+  --chart-1: var(--ump-blue);
+  --chart-2: var(--ump-sky);
+  --chart-3: var(--ump-cyan);
+  --chart-4: var(--ump-light-blue);
+  --chart-5: var(--ump-navy);
+  
+  --radius: 1rem;
+  
+  /* Premium Design Tokens */
+  --shadow-premium: 0 8px 32px rgba(44, 82, 115, 0.12);
+  --shadow-luxury: 0 20px 60px rgba(44, 82, 115, 0.15);
+  --shadow-elevated: 0 4px 20px rgba(44, 82, 115, 0.08);
+  --shadow-glow: 0 0 40px rgba(74, 122, 157, 0.3);
+  
+  /* Sidebar - Solid blue for performance */
+  --sidebar: var(--ump-blue-900);
+  --sidebar-solid: var(--ump-blue-900);
+  --sidebar-foreground: var(--ump-white);
+  --sidebar-primary: var(--ump-sky);
+  --sidebar-primary-foreground: var(--ump-white);
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
+  --sidebar-accent-foreground: var(--ump-white);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: var(--ump-sky);
+}
+
+.dark {
+  /* Dark mode with solid backgrounds for performance */
+  --background: #0f172a;
+  --background-solid: #0f172a;
+  --foreground: var(--ump-white);
+  --card: rgba(30, 58, 138, 0.3);
+  --card-foreground: var(--ump-white);
+  --popover: rgba(30, 58, 138, 0.9);
+  --popover-foreground: var(--ump-white);
+  
+  /* Primary - Bright sky blue for visibility in dark mode */
+  --primary: var(--ump-sky);
+  --primary-foreground: var(--ump-navy);
+  
+  /* Secondary - Lighter blue */
+  --secondary: rgba(59, 130, 246, 0.2);
+  --secondary-foreground: var(--ump-white);
+  
+  /* Muted - Dark blue tones */
+  --muted: rgba(30, 64, 175, 0.3);
+  --muted-foreground: #cbd5e1;
+  
+  /* Accent - Bright cyan accent */
+  --accent: var(--ump-cyan);
+  --accent-foreground: var(--ump-white);
+  
+  /* Destructive - Bright red for visibility */
+  --destructive: #f87171;
+  --destructive-foreground: var(--ump-white);
+  
+  --border: rgba(59, 130, 246, 0.3);
+  --input: rgba(30, 64, 175, 0.2);
+  --input-background: rgba(30, 64, 175, 0.2);
+  --switch-background: rgba(59, 130, 246, 0.3);
+  --ring: var(--ump-sky);
+  
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  
+  /* Charts - Bright colors for dark mode */
+  --chart-1: var(--ump-sky);
+  --chart-2: var(--ump-cyan);
+  --chart-3: #60a5fa;
+  --chart-4: #f87171;
+  --chart-5: #a78bfa;
+  
+  /* Sidebar - Solid dark blue for performance */
+  --sidebar: #0f172a;
+  --sidebar-solid: #0f172a;
+  --sidebar-foreground: var(--ump-white);
+  --sidebar-primary: var(--ump-sky);
+  --sidebar-primary-foreground: var(--ump-white);
+  --sidebar-accent: rgba(59, 130, 246, 0.2);
+  --sidebar-accent-foreground: var(--ump-white);
+  --sidebar-border: rgba(59, 130, 246, 0.2);
+  --sidebar-ring: var(--ump-sky);
+}
+
+@theme inline {
+  /* Core system colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  
+  /* University of Mpumalanga brand colors and blue palette */
+  --color-ump-navy: var(--ump-navy);
+  --color-ump-blue: var(--ump-blue);
+  --color-ump-light-blue: var(--ump-light-blue);
+  --color-ump-sky: var(--ump-sky);
+  --color-ump-cyan: var(--ump-cyan);
+  --color-ump-blue-50: var(--ump-blue-50);
+  --color-ump-blue-100: var(--ump-blue-100);
+  --color-ump-blue-200: var(--ump-blue-200);
+  --color-ump-blue-500: var(--ump-blue-500);
+  --color-ump-blue-600: var(--ump-blue-600);
+  --color-ump-blue-700: var(--ump-blue-700);
+  --color-ump-blue-800: var(--ump-blue-800);
+  --color-ump-blue-900: var(--ump-blue-900);
+  --color-ump-orange: var(--ump-orange);
+  --color-ump-green: var(--ump-green);
+  --color-ump-red: var(--ump-red);
+  --color-ump-white: var(--ump-white);
+  --color-ump-light-gray: var(--ump-light-gray);
+  --color-ump-gray: var(--ump-gray);
+  
+  /* Charts with UMP colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  
+  /* Radius tokens */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Sidebar colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    background: var(--background-solid);
+    color: var(--foreground);
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* Utility classes for consistent layouts */
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Beautiful Blue Color Utilities */
+  .bg-ump-navy { background-color: var(--ump-navy); }
+  .bg-ump-blue { background-color: var(--ump-blue); }
+  .bg-ump-light-blue { background-color: var(--ump-light-blue); }
+  .bg-ump-sky { background-color: var(--ump-sky); }
+  .bg-ump-cyan { background-color: var(--ump-cyan); }
+  .bg-ump-blue-50 { background-color: var(--ump-blue-50); }
+  .bg-ump-blue-100 { background-color: var(--ump-blue-100); }
+  .bg-ump-blue-200 { background-color: var(--ump-blue-200); }
+  .bg-ump-blue-500 { background-color: var(--ump-blue-500); }
+  .bg-ump-blue-600 { background-color: var(--ump-blue-600); }
+  .bg-ump-blue-700 { background-color: var(--ump-blue-700); }
+  .bg-ump-blue-800 { background-color: var(--ump-blue-800); }
+  .bg-ump-blue-900 { background-color: var(--ump-blue-900); }
+  
+  .text-ump-navy { color: var(--ump-navy); }
+  .text-ump-blue { color: var(--ump-blue); }
+  .text-ump-light-blue { color: var(--ump-light-blue); }
+  .text-ump-sky { color: var(--ump-sky); }
+  .text-ump-cyan { color: var(--ump-cyan); }
+  .text-ump-blue-50 { color: var(--ump-blue-50); }
+  .text-ump-blue-100 { color: var(--ump-blue-100); }
+  .text-ump-blue-200 { color: var(--ump-blue-200); }
+  .text-ump-blue-500 { color: var(--ump-blue-500); }
+  .text-ump-blue-600 { color: var(--ump-blue-600); }
+  .text-ump-blue-700 { color: var(--ump-blue-700); }
+  .text-ump-blue-800 { color: var(--ump-blue-800); }
+  .text-ump-blue-900 { color: var(--ump-blue-900); }
+  
+  .border-ump-navy { border-color: var(--ump-navy); }
+  .border-ump-blue { border-color: var(--ump-blue); }
+  .border-ump-light-blue { border-color: var(--ump-light-blue); }
+  .border-ump-sky { border-color: var(--ump-sky); }
+  .border-ump-cyan { border-color: var(--ump-cyan); }
+  
+  /* University of Mpumalanga Brand Colors */
+  .bg-ump-orange { background-color: var(--ump-orange); }
+  .bg-ump-green { background-color: var(--ump-green); }
+  .bg-ump-red { background-color: var(--ump-red); }
+  .bg-ump-purple { background-color: var(--ump-purple); }
+  .bg-ump-pink { background-color: var(--ump-pink); }
+  .bg-ump-indigo { background-color: var(--ump-indigo); }
+  .bg-ump-slate { background-color: var(--ump-slate); }
+  .bg-ump-white { background-color: var(--ump-white); }
+  .bg-ump-light-gray { background-color: var(--ump-light-gray); }
+  .bg-ump-gray { background-color: var(--ump-gray); }
+
+  .text-ump-orange { color: var(--ump-orange); }
+  .text-ump-green { color: var(--ump-green); }
+  .text-ump-red { color: var(--ump-red); }
+  .text-ump-purple { color: var(--ump-purple); }
+  .text-ump-pink { color: var(--ump-pink); }
+  .text-ump-indigo { color: var(--ump-indigo); }
+  .text-ump-slate { color: var(--ump-slate); }
+  .text-ump-white { color: var(--ump-white); }
+  .text-ump-light-gray { color: var(--ump-light-gray); }
+  .text-ump-gray { color: var(--ump-gray); }
+
+  .border-ump-orange { border-color: var(--ump-orange); }
+  .border-ump-green { border-color: var(--ump-green); }
+  .border-ump-red { border-color: var(--ump-red); }
+  .border-ump-purple { border-color: var(--ump-purple); }
+  .border-ump-pink { border-color: var(--ump-pink); }
+  .border-ump-indigo { border-color: var(--ump-indigo); }
+  .border-ump-slate { border-color: var(--ump-slate); }
+  
+  /* Success and status colors using UMP brand */
+  .bg-success { background-color: var(--ump-green); }
+  .text-success { color: var(--ump-green); }
+  .bg-warning { background-color: var(--ump-orange); }
+  .text-warning { color: var(--ump-orange); }
+  .bg-danger { background-color: var(--ump-red); }
+  .text-danger { color: var(--ump-red); }
+  
+  /* Beautiful food-themed gradients */
+  .gradient-blue {
+    background: var(--ump-blue);
+  }
+
+  .gradient-blue-subtle {
+    background: var(--ump-blue-50);
+  }
+
+  .gradient-sidebar {
+    background: var(--sidebar);
+  }
+
+  .gradient-food-overlay {
+    background: linear-gradient(135deg,
+      rgba(30, 58, 138, 0.8) 0%,
+      rgba(37, 99, 235, 0.6) 50%,
+      rgba(16, 185, 129, 0.7) 100%);
+  }
+
+  .gradient-culinary {
+    background: linear-gradient(135deg,
+      var(--ump-navy) 0%,
+      var(--ump-blue) 50%,
+      var(--ump-green) 100%);
+  }
+
+  /* Modern Gradients */
+  .gradient-modern {
+    background: linear-gradient(135deg,
+      var(--ump-blue) 0%,
+      var(--ump-purple) 50%,
+      var(--ump-pink) 100%);
+  }
+
+  .gradient-card {
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(248, 250, 252, 0.8) 100%);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg,
+      var(--ump-indigo) 0%,
+      var(--ump-purple) 100%);
+  }
+  
+  .backdrop-blur-food {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+  }
+  
+  /* Premium Animations */
+  @keyframes luxuryGlow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(44, 82, 115, 0.15),
+                  0 0 40px rgba(74, 122, 157, 0.1);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(44, 82, 115, 0.25),
+                  0 0 60px rgba(74, 122, 157, 0.15);
+    }
+  }
+
+  @keyframes premiumFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Modern Animations */
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pulseModern {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes bounceIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .animate-luxury-glow {
+    animation: luxuryGlow 3s ease-in-out infinite;
+  }
+
+  .animate-premium-float {
+    animation: premiumFloat 3s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  /* Modern Animation Classes */
+  .animate-slide-in-right {
+    animation: slideInRight 0.5s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-pulse-modern {
+    animation: pulseModern 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.6s ease-out;
+  }
+  
+  /* Premium Transitions */
+  .transition-premium {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .transition-luxury {
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  /* Hover Effects */
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-luxury);
+  }
+  
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  /* Premium Focus States */
+  .focus-premium:focus {
+    outline: 2px solid var(--ump-navy);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(44, 82, 115, 0.1);
+  }
+
+  /* Modern Utility Classes */
+  .glass-effect {
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-dark {
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .shadow-modern {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .shadow-modern-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .border-modern {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .rounded-modern {
+    border-radius: 12px;
+  }
+
+  .rounded-modern-lg {
+    border-radius: 16px;
+  }
+
+  /* Interactive Elements */
+  .interactive-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .interactive-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .interactive-button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .interactive-button:hover {
+    transform: translateY(-2px);
+  }
+
+  .interactive-button:active {
+    transform: translateY(0);
+  }
+
+  /* Status Indicators */
+  .status-online {
+    position: relative;
+  }
+
+  .status-online::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background: var(--ump-green);
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+
+  .status-busy {
+    position: relative;
+  }
+
+  .status-busy::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background: var(--ump-orange);
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+
+  .status-offline {
+    position: relative;
+  }
+
+  .status-offline::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background: var(--ump-gray);
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+}

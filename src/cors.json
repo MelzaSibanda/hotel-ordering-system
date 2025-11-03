@@ -1,0 +1,1 @@
+[{"origin": ["http://localhost:3000", "http://localhost:5173", "https://egumeni-eats-e2a32.web.app"], "method": ["GET", "POST", "PUT", "DELETE"], "maxAgeSeconds": 3600}] 

@@ -18,7 +18,7 @@ import {
   User,
   Navigation
 } from 'lucide-react'
-const egumeniLogo = "/src/assets/logo.png"
+import egumeniLogo from '../assets/logo.png'
 
 interface Order {
   id: string

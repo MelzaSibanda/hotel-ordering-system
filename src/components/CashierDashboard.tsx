@@ -29,7 +29,7 @@ import {
   Trash2,
   LogOut
 } from 'lucide-react'
-import egumeniLogo from '../assets/logo.png'
+const egumeniLogo = "/src/assets/logo.png"
 
 interface MenuItem {
   id: string

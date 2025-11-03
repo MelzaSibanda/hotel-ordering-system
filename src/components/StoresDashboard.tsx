@@ -37,7 +37,7 @@ import {
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import egumeniLogo from '../assets/logo.png'
+const egumeniLogo = "/src/assets/logo.png"
 
 interface InventoryItem {
   id: string

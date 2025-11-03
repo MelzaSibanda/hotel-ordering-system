@@ -33,7 +33,7 @@ import {
   Send,
   AlertOctagon
 } from 'lucide-react'
-const egumeniLogo = "/src/assets/logo.png"
+import egumeniLogo from '../assets/logo.png'
 
 interface Ingredient {
   inventoryId: string

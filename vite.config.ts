@@ -30,9 +30,9 @@
     server: {
       port: 3000,
       open: true,
-      allowedHosts: ['egumeni-eat.onrender.com'],
+      allowedHosts: ['egumeni-eat.onrender.com', 'egumeni-eat-gzgq.onrender.com'],
     },
     preview: {
-      allowedHosts: ['egumeni-eat.onrender.com'],
+      allowedHosts: ['egumeni-eat.onrender.com', 'egumeni-eat-gzgq.onrender.com'],
     },
   });

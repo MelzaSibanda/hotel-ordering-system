@@ -7,13 +7,13 @@ import { getStorage } from 'firebase/storage'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAit5yUFIDwNEWgyZKAmpaLj1-8iVSFhyY",
-  authDomain: "egumeni-eats-e2a32.firebaseapp.com",
-  projectId: "egumeni-eats-e2a32",
-  storageBucket: "egumeni-eats-e2a32.firebasestorage.app",
-  messagingSenderId: "318471281511",
-  appId: "1:318471281511:web:06b1bf9a0a5947cd746dc2",
-  measurementId: "G-6N8MQ3XC6R"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAit5yUFIDwNEWgyZKAmpaLj1-8iVSFhyY",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "egumeni-eats-e2a32.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "egumeni-eats-e2a32",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "egumeni-eats-e2a32.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "318471281511",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:318471281511:web:06b1bf9a0a5947cd746dc2",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-6N8MQ3XC6R"
 }
 
 // Initialize Firebase

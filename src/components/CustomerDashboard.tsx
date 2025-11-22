@@ -1751,14 +1751,14 @@ export default function CustomerDashboard() {
       {/* Footer */}
       <footer className={`border-t py-4 text-center text-sm ${isDarkMode ? 'border-gray-700 bg-gray-800 text-gray-300' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
         <p className={`mb-1 font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-          🍽️ Egumeni Eats – Tfokomala Hotel Ordering System
+          🍽️ Egumeni Eats – Ordering System
         </p>
         <p>
           Bringing convenience and quality dining to the University of Mpumalanga community.
         </p>
         <p className="mt-1">
           📞 Support: <a href="mailto:support@egumenieats.co.za" className={`hover:underline ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>support@egumenieats.co.za</a> |
-          📍 Location: Tfokomala Hotel & Conference Centre, Mbombela Campus
+          📍 Location: Conference Centre, Mbombela Campus
         </p>
         <p className={`mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
           © {new Date().getFullYear()} Egumeni Eats. All rights reserved.

@@ -593,7 +593,7 @@ export class ReportingService {
     
     // Business info (this would typically come from settings)
     const businessInfo = {
-      name: 'Tfokomala Hotel - Egumeni Eats',
+      name: 'Egumeni Eats',
       address: 'University of Mpumalanga Campus',
       phone: '+27 XX XXX XXXX',
       vatNumber: 'VAT REG: XXXXXXXXX'

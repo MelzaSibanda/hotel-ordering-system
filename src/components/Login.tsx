@@ -97,7 +97,7 @@ export default function Login() {
       {
         icon: <Utensils className="w-8 h-8 text-ump-orange" />,
         title: "Welcome to Egumeni Eats",
-        description: "Experience premium dining at Tfokomala Hotel with our innovative ordering system powered by University of Mpumalanga technology."
+        description: "Experience premium dining with our innovative ordering system powered by University of Mpumalanga technology."
       },
       {
         icon: <Clock className="w-8 h-8 text-ump-blue" />,
@@ -417,7 +417,7 @@ export default function Login() {
               <div className="h-px bg-gradient-to-r from-transparent via-white/50 to-transparent flex-1"></div>
             </div>
             <p className="text-white/90 font-semibold text-xl drop-shadow-md">
-              Tfokomala Hotel & Conference Centre
+              Conference Centre
             </p>
             <p className="text-white/80 font-medium text-lg">
               Egumeni Restaurant & Bar Ordering System
@@ -824,7 +824,7 @@ export default function Login() {
           <div className="flex items-center justify-center gap-3 text-white/90">
             <div className="h-px bg-gradient-to-r from-transparent via-white/50 to-transparent flex-1"></div>
             <Hotel className="w-5 h-5 text-ump-orange" />
-            <span className="font-semibold">Tfokomala Hotel - Premium Dining Experience</span>
+            <span className="font-semibold">Premium Dining Experience</span>
             <Hotel className="w-5 h-5 text-ump-orange" />
             <div className="h-px bg-gradient-to-r from-transparent via-white/50 to-transparent flex-1"></div>
           </div>

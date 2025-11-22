@@ -1,6 +1,6 @@
 -- ========================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
--- Egumeni Eats - Tfokomala Hotel & University of Mpumalanga
+-- Egumeni Eats - University of Mpumalanga
 -- ========================================
 
 -- Enable RLS on all tables

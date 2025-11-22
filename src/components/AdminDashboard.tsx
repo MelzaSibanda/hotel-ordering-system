@@ -1460,7 +1460,7 @@ export default function AdminDashboard() {
       doc.text('EGUMENI EATS', 105, 20, { align: 'center' })
 
       doc.setFontSize(12)
-      doc.text('University of Mpumalanga - Tfokomala Hotel', 105, 27, { align: 'center' })
+      doc.text('University of Mpumalanga - ', 105, 27, { align: 'center' })
       doc.text(`${reportType.toUpperCase()} REPORT`, 105, 35, { align: 'center' })
 
       // Metadata

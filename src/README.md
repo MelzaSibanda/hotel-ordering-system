@@ -1,6 +1,6 @@
 # Egumeni Eats - Standalone PWA
 
-A streamlined food ordering system for Tfokomala Hotel and University of Mpumalanga.
+A streamlined food ordering system for University of Mpumalanga.
 
 ## Recent Updates
 
@@ -137,4 +137,4 @@ The project uses:
 
 ---
 
-**Built for University of Mpumalanga - Tfokomala Hotel**
+**Built for University of Mpumalanga**

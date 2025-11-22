@@ -155,7 +155,7 @@ export default function LandingPage() {
               />
               <div>
                 <h1 className="text-xl font-bold text-ump-navy">Egumeni Eats</h1>
-                <p className="text-xs text-ump-gray">Tfokomala Hotel</p>
+                <p className="text-xs text-ump-gray"></p>
               </div>
             </div>
             <Button
@@ -188,7 +188,7 @@ export default function LandingPage() {
           <h1 className="text-5xl font-bold text-ump-navy mb-4">
             Welcome to <span className="text-ump-orange">Egumeni Eats</span>
           </h1>
-          <p className="text-xl text-ump-gray mb-2">Premium Dining at Tfokomala Hotel</p>
+          
           <p className="text-lg text-ump-gray/80 max-w-2xl mx-auto">
             Experience exceptional cuisine crafted with the finest ingredients.
             Order from our most popular dishes or explore our complete menu.
@@ -346,7 +346,7 @@ export default function LandingPage() {
         <div className="text-center bg-gradient-to-r from-ump-navy to-ump-blue rounded-3xl p-12 text-white shadow-2xl">
           <h2 className="text-4xl font-bold mb-4">Ready to Experience Premium Dining?</h2>
           <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
-            Join thousands of satisfied guests who choose Egumeni Eats for their dining experience at Tfokomala Hotel.
+            Join thousands of satisfied guests who choose Egumeni Eats for their dining experience.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button

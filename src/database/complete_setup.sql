@@ -1,7 +1,7 @@
 -- ========================================
 -- COMPLETE DATABASE SETUP
--- Egumeni Eats - Tfokomala Hotel & University of Mpumalanga
--- 
+-- Egumeni Eats - University of Mpumalanga
+--
 -- This script creates the complete database schema with:
 -- 1. Tables and relationships
 -- 2. Row Level Security (RLS) policies  

@@ -27,7 +27,7 @@ const AppLoader = ({ message = "Loading..." }) => (
     <div className="text-center backdrop-blur-sm bg-white/90 rounded-3xl p-12 border border-ump-blue/20 shadow-2xl">
       <div className="w-20 h-20 border-4 border-ump-navy border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
       <h2 className="text-3xl font-bold text-ump-navy mb-3">Egumeni Eats</h2>
-      <p className="text-xl text-ump-navy mb-2">Tfokomala Hotel</p>
+      <p className="text-xl text-ump-navy mb-2"></p>
       <p className="text-ump-gray">{message}</p>
       
       {/* UMP Brand Color Indicators */}
@@ -69,7 +69,7 @@ const DashboardLoader: React.FC<DashboardLoaderProps> = ({ role }) => {
           {role} Dashboard
         </h2>
         <p className="text-xl text-ump-navy mb-2">
-          Tfokomala Hotel
+          
         </p>
         <p className="text-ump-gray">
           Preparing your workspace...
@@ -183,7 +183,7 @@ function App() {
         <div className="fixed top-0 left-0 right-0 z-50 bg-ump-navy/95 text-white text-center py-1 text-xs shadow-sm">
           <span className="inline-flex items-center gap-2">
             <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-            <span className="text-ump-navy">Egumeni Restaurant & Bar (Tfokomala Hotel) Ordering System</span>
+            <span className="text-ump-navy">Egumeni Restaurant & Bar Ordering System</span>
           </span>
         </div>
         

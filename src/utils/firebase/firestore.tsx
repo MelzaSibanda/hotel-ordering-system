@@ -150,9 +150,9 @@ export const inventoryOperations = {
   // Inventory Usage Operations
   recordInventoryUsage: async (usageData: any) => {
     try {
-      await addDoc(collection(db, "inventoryUsage"), {
+      await addDoc(collections.inventoryUsage, {
         ...usageData,
-        createdAt: new Date().toISOString(),
+        createdAt: Timestamp.now(),
       });
     } catch (error) {
       console.error("Error recording inventory usage:", error);
@@ -162,7 +162,7 @@ export const inventoryOperations = {
 
   getInventoryUsageHistory: async () => {
     try {
-      const usageQuery = query(collection(db, "inventoryUsage"), orderBy("createdAt", "desc"));
+      const usageQuery = query(collections.inventoryUsage, orderBy("createdAt", "desc"));
       const snapshot = await getDocs(usageQuery);
       return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
@@ -365,14 +365,121 @@ export const orderOperations = {
 
 // Recipe Operations
 export const recipeOperations = {
-  // Get recipe by menu item ID
+  // Get recipe by menu item ID with enhanced validation
   getRecipe: async (menuItemId: string) => {
+    if (!menuItemId || typeof menuItemId !== 'string') {
+      throw new Error('Invalid menu item ID provided')
+    }
+
     const q = query(collections.recipes, where('menuItemId', '==', menuItemId))
     const snapshot = await getDocs(q)
-    if (!snapshot.empty) {
-      const doc = snapshot.docs[0]
-      return { id: doc.id, ...doc.data() }
+
+    if (snapshot.empty) {
+      console.log(`No recipe found for menu item: ${menuItemId}`)
+      return null
     }
-    return null
+
+    if (snapshot.size > 1) {
+      console.warn(`Multiple recipes found for menu item ${menuItemId}, using first one`)
+    }
+
+    const doc = snapshot.docs[0]
+    const recipeData = doc.data()
+
+    // Validate recipe structure
+    if (!recipeData || !Array.isArray(recipeData.ingredients)) {
+      console.error(`Invalid recipe structure for menu item ${menuItemId}`)
+      return null
+    }
+
+    // Process and validate ingredients, merging duplicates
+    const processedIngredients = recipeOperations.processIngredients(recipeData.ingredients)
+
+    return {
+      id: doc.id,
+      menuItemId: recipeData.menuItemId,
+      name: recipeData.name || 'Unknown Recipe',
+      ingredients: processedIngredients,
+      ...recipeData
+    }
+  },
+
+  // Process ingredients: validate and merge duplicates
+  processIngredients: (ingredients: any[]) => {
+    const ingredientMap = new Map()
+
+    for (const ingredient of ingredients) {
+      // Validate ingredient structure
+      if (!recipeOperations.validateIngredient(ingredient)) {
+        console.warn('Skipping invalid ingredient:', ingredient)
+        continue
+      }
+
+      const key = ingredient.inventoryId
+
+      if (ingredientMap.has(key)) {
+        // Merge duplicate ingredients
+        const existing = ingredientMap.get(key)
+        existing.quantity += ingredient.quantity
+        console.log(`Merged duplicate ingredient ${key}: ${existing.quantity} total`)
+      } else {
+        // Add new ingredient
+        ingredientMap.set(key, {
+          inventoryId: ingredient.inventoryId,
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit
+        })
+      }
+    }
+
+    return Array.from(ingredientMap.values())
+  },
+
+  // Validate ingredient structure
+  validateIngredient: (ingredient: any) => {
+    return (
+      ingredient &&
+      typeof ingredient === 'object' &&
+      typeof ingredient.inventoryId === 'string' &&
+      ingredient.inventoryId.length > 0 &&
+      typeof ingredient.name === 'string' &&
+      ingredient.name.length > 0 &&
+      typeof ingredient.quantity === 'number' &&
+      ingredient.quantity > 0 &&
+      typeof ingredient.unit === 'string' &&
+      ingredient.unit.length > 0
+    )
+  },
+
+  // Get multiple recipes in batch for performance
+  getRecipesBatch: async (menuItemIds: string[]) => {
+    if (!Array.isArray(menuItemIds) || menuItemIds.length === 0) {
+      return []
+    }
+
+    // Remove duplicates and invalid IDs
+    const validIds = [...new Set(menuItemIds.filter(id => id && typeof id === 'string'))]
+
+    if (validIds.length === 0) {
+      return []
+    }
+
+    // For Firestore, we need to make separate queries for each ID
+    // since 'in' queries have a limit of 10 items
+    const recipes = []
+
+    for (const menuItemId of validIds) {
+      try {
+        const recipe = await recipeOperations.getRecipe(menuItemId)
+        if (recipe) {
+          recipes.push(recipe)
+        }
+      } catch (error) {
+        console.error(`Error fetching recipe for ${menuItemId}:`, error)
+      }
+    }
+
+    return recipes
   },
 }

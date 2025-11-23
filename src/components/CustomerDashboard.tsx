@@ -97,6 +97,9 @@ export default function CustomerDashboard() {
   const [showPayment, setShowPayment] = useState(false)
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null)
 
+  // Active tab state for programmatic navigation
+  const [activeTab, setActiveTab] = useState('menu')
+
   // Dark mode state
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('customer-dark-mode')
@@ -172,6 +175,100 @@ export default function CustomerDashboard() {
     loadData()
     loadLogo()
   }, [user])
+
+  // Real-time order updates listener
+  useEffect(() => {
+    if (!user) return
+
+    console.log('🔄 Setting up real-time order listener for user:', user.id)
+
+    const setupOrderListener = async () => {
+      try {
+        const { collection, query, where, onSnapshot } = await import('firebase/firestore')
+        const { db } = await import('../utils/firebase/config')
+
+        // Listen for orders belonging to the current user
+        const ordersQuery = query(
+          collection(db, 'orders'),
+          where('customerId', '==', user.id)
+        )
+
+        const unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
+          const updatedOrders = snapshot.docs.map(doc => {
+            const data = doc.data()
+            return {
+              id: doc.id,
+              customerId: data.customerId || '',
+              customerName: data.customerName || '',
+              customerEmail: data.customerEmail || '',
+              items: data.items || [],
+              totalAmount: data.totalAmount || 0,
+              status: data.status || 'pending',
+              paymentStatus: data.paymentStatus || 'pending',
+              orderType: data.orderType || 'dine-in',
+              tableNumber: data.tableNumber,
+              deliveryAddress: data.deliveryAddress,
+              specialInstructions: data.specialInstructions,
+              orderDate: data.orderDate || new Date().toISOString(),
+              estimatedTime: data.estimatedTime || 15,
+              paymentId: data.paymentId,
+              reservationId: data.reservationId
+            } as Order
+          })
+
+          console.log('📡 Real-time order update received:', updatedOrders.length, 'orders')
+
+          // Update order history with real-time data
+          setOrderHistory(updatedOrders)
+
+          // Show notification for status changes
+          updatedOrders.forEach(updatedOrder => {
+            const existingOrder = orderHistory.find(o => o.id === updatedOrder.id)
+            if (existingOrder) {
+              // Check for status changes
+              if (existingOrder.status !== updatedOrder.status) {
+                console.log(`📢 Order ${updatedOrder.id.slice(-6)} status changed: ${existingOrder.status} → ${updatedOrder.status}`)
+                toast.success(`Order #${updatedOrder.id.slice(-6)} status updated to ${updatedOrder.status.charAt(0).toUpperCase() + updatedOrder.status.slice(1)}`)
+              }
+
+              // Check for payment status changes
+              if (existingOrder.paymentStatus !== updatedOrder.paymentStatus) {
+                console.log(`💳 Order ${updatedOrder.id.slice(-6)} payment status changed: ${existingOrder.paymentStatus} → ${updatedOrder.paymentStatus}`)
+                if (updatedOrder.paymentStatus === 'paid' && existingOrder.paymentStatus === 'pending') {
+                  // Payment was confirmed - show success message
+                  console.log('💰 Payment confirmed!')
+                  toast.success('Payment confirmed! Your Egumeni Eats order is being prepared.')
+                } else if (updatedOrder.paymentStatus === 'failed') {
+                  toast.error(`Payment failed for Order #${updatedOrder.id.slice(-6)}`)
+                }
+              }
+            }
+          })
+
+        }, (error) => {
+          console.error('❌ Real-time order listener error:', error)
+        })
+
+        // Cleanup function
+        return unsubscribe
+
+      } catch (error) {
+        console.error('❌ Failed to setup real-time order listener:', error)
+      }
+    }
+
+    const unsubscribePromise = setupOrderListener()
+
+    // Cleanup on unmount or user change
+    return () => {
+      unsubscribePromise.then(unsubscribe => {
+        if (unsubscribe) {
+          console.log('🔌 Cleaning up real-time order listener')
+          unsubscribe()
+        }
+      })
+    }
+  }, [user, orderHistory])
 
   // Update profile form when profile changes
   useEffect(() => {
@@ -285,7 +382,7 @@ export default function CustomerDashboard() {
   }
 
   // Get filtered menu items
-  const filteredMenuItems = selectedCategory === 'all' 
+  const filteredMenuItems = selectedCategory === 'all'
     ? menuItems.filter(item => item.available)
     : menuItems.filter(item => item.category === selectedCategory && item.available)
 
@@ -341,7 +438,8 @@ export default function CustomerDashboard() {
     return cart.reduce((total, item) => total + item.quantity, 0)
   }
 
-  // Place order
+
+  // Validate and prepare order for payment
   const placeOrder = async () => {
     if (cart.length === 0) {
       toast.error('Your cart is empty')
@@ -358,84 +456,159 @@ export default function CustomerDashboard() {
       return
     }
 
-    const order: Order = {
-      id: generateId('order'),
-      customerId: user?.id || 'guest',
-      customerName: user?.name || 'Guest Customer',
-      customerEmail: user?.email || 'guest@example.com',
-      items: cart.map(item => ({
-        menuItemId: item.menuItem.id,
-        name: item.menuItem.name,
-        price: item.customerType === 'staff' ? item.menuItem.staffPrice : item.menuItem.guestPrice,
-        quantity: item.quantity,
-        ...(item.specialInstructions && { specialInstructions: item.specialInstructions }),
-        ...(item.selectedExtras && item.selectedExtras.length > 0 && { selectedExtras: item.selectedExtras })
-      })),
-      status: 'pending',
-      totalAmount: getCartTotal(),
-      paymentStatus: 'pending',
-      orderType: orderDetails.orderType,
-      ...(orderDetails.tableNumber && { tableNumber: orderDetails.tableNumber }),
-      ...(orderDetails.deliveryAddress && { deliveryAddress: orderDetails.deliveryAddress }),
-      ...(orderDetails.specialInstructions && { specialInstructions: orderDetails.specialInstructions }),
-      orderDate: new Date().toISOString(),
-      estimatedTime: Math.max(15, cart.length * 8) // Estimate based on items
+    try {
+      // Validate inventory before showing payment screen
+      const { InventoryService } = await import('../services/inventory/InventoryService')
+      const inventoryService = new InventoryService()
+
+      // Check if all items are available in sufficient quantity
+      const validationResult = await inventoryService.validateStockAvailability(
+        cart.map(item => ({
+          menuItemId: item.menuItem.id,
+          name: item.menuItem.name,
+          price: item.customerType === 'staff' ? item.menuItem.staffPrice : item.menuItem.guestPrice,
+          quantity: item.quantity
+        }))
+      )
+
+      // Check if validation failed
+      if (!validationResult.isValid) {
+        const invalidItems = validationResult.results.filter(r => !r.valid)
+        invalidItems.forEach(invalidResult => {
+          toast.error(`${invalidResult.itemName}: ${invalidResult.reason}`, {
+            duration: 6000
+          })
+        })
+        return
+      }
+
+      // Create order draft for payment
+      const orderDraft = {
+        id: generateId('order'),
+        customerId: user?.id || 'guest',
+        customerName: user?.name || 'Guest Customer',
+        customerEmail: user?.email || 'guest@example.com',
+        items: cart.map(item => ({
+          menuItemId: item.menuItem.id,
+          name: item.menuItem.name,
+          price: item.customerType === 'staff' ? item.menuItem.staffPrice : item.menuItem.guestPrice,
+          quantity: item.quantity,
+          requiresCooking: item.menuItem.requiresCooking !== false,
+          ...(item.specialInstructions && { specialInstructions: item.specialInstructions }),
+          ...(item.selectedExtras && item.selectedExtras.length > 0 && { selectedExtras: item.selectedExtras })
+        })),
+        totalAmount: getCartTotal(),
+        orderType: orderDetails.orderType,
+        status: 'pending' as const,
+        paymentStatus: 'pending' as const,
+        ...(orderDetails.tableNumber && { tableNumber: orderDetails.tableNumber }),
+        ...(orderDetails.deliveryAddress && { deliveryAddress: orderDetails.deliveryAddress }),
+        ...(orderDetails.specialInstructions && { specialInstructions: orderDetails.specialInstructions }),
+        orderDate: new Date().toISOString(),
+        estimatedTime: Math.max(15, cart.length * 8)
+      }
+
+      // Store order draft for payment processing
+      setCurrentOrder(orderDraft)
+
+      // Show payment screen
+      setShowPayment(true)
+
+      toast.success('Order validated! Please complete payment.')
+
+    } catch (error) {
+      console.error('Order validation failed:', error)
+      toast.error('Failed to validate order. Please try again.')
     }
-
-    // Add order to Firebase
-    await addOrder(order)
-
-    // Update order history
-    setOrderHistory(prev => [order, ...prev])
-
-    // Set current order for payment
-    setCurrentOrder(order)
-
-    // Clear cart
-    setCart([])
-    setOrderDetails({
-      orderType: 'dine-in',
-      tableNumber: '',
-      deliveryAddress: '',
-      specialInstructions: ''
-    })
-
-    // Show payment screen
-    setShowPayment(true)
-
-    // Don't show success message until payment is completed
   }
 
-  // Handle payment success
+  // Handle payment success from YocoPayment component
   const handlePaymentSuccess = async (paymentData: any) => {
     if (!currentOrder) return
 
     try {
-      // Update order payment status
-      const updatedOrder = {
-        ...currentOrder,
-        paymentStatus: 'paid' as const,
-        status: 'preparing' as const, // Move to preparing once paid
+      // Import services dynamically to avoid circular dependencies
+      const { InventoryService } = await import('../services/inventory/InventoryService')
+      const { PaymentService } = await import('../services/payment/PaymentService')
+      const { OrderService } = await import('../services/order/OrderService')
+      const { NotificationService } = await import('../services/notification/NotificationService')
+      const { OrderProcessingPipeline } = await import('../services/order/OrderProcessingPipeline')
+
+      // Initialize services
+      const inventoryService = new InventoryService()
+      const paymentService = new PaymentService()
+      const orderService = new OrderService()
+      const notificationService = new NotificationService()
+      const orderProcessingPipeline = new OrderProcessingPipeline(
+        inventoryService,
+        paymentService,
+        orderService,
+        notificationService
+      )
+
+      // Process order through pipeline (this will deduct inventory and create the order)
+      const orderDraft = {
+        id: currentOrder.id,
+        customerId: currentOrder.customerId,
+        customerName: currentOrder.customerName,
+        customerEmail: currentOrder.customerEmail,
+        items: currentOrder.items,
+        totalAmount: currentOrder.totalAmount,
+        orderType: currentOrder.orderType,
+        tableNumber: currentOrder.tableNumber,
+        deliveryAddress: currentOrder.deliveryAddress,
+        specialInstructions: currentOrder.specialInstructions,
+        orderDate: currentOrder.orderDate,
+        estimatedTime: currentOrder.estimatedTime || 15
       }
 
-      // Update order in Firebase
+      const result = await orderProcessingPipeline.processOrder(orderDraft)
+
+      if (!result.success) {
+        // Handle specific error types
+        if (result.stage === 'validation') {
+          const validationResults = result.details as any[]
+          validationResults
+            .filter(r => !r.valid)
+            .forEach(invalidResult => {
+              toast.error(`${invalidResult.itemName}: ${invalidResult.reason}`, {
+                duration: 6000
+              })
+            })
+        } else {
+          toast.error(`Order processing failed: ${result.error}`)
+        }
+        return
+      }
+
+      // Update order with payment data
       const { doc, updateDoc } = await import('firebase/firestore')
       const { db } = await import('../utils/firebase/config')
 
-      const orderRef = doc(db, 'orders', currentOrder.id)
+      const orderRef = doc(db, 'orders', result.order.id)
       await updateDoc(orderRef, {
         paymentStatus: 'paid',
-        status: 'preparing',
         paymentData: paymentData,
         updatedAt: new Date().toISOString()
       })
 
+      // Update the processed order with payment status
+      const finalOrder = {
+        ...result.order,
+        paymentStatus: 'paid' as const
+      }
+
       // Update order history
-      setOrderHistory(prev =>
-        prev.map(order =>
-          order.id === currentOrder.id ? updatedOrder : order
-        )
-      )
+      setOrderHistory(prev => [finalOrder, ...prev])
+
+      // Clear cart and reset order details only after successful processing
+      setCart([])
+      setOrderDetails({
+        orderType: 'dine-in',
+        tableNumber: '',
+        deliveryAddress: '',
+        specialInstructions: ''
+      })
 
       // Reset payment state
       setShowPayment(false)
@@ -444,26 +617,29 @@ export default function CustomerDashboard() {
       toast.success('Payment successful! Your order is being prepared.')
 
     } catch (error) {
-      console.error('Failed to update order after payment:', error)
-      toast.error('Payment completed but order status update failed. Please contact support.')
+      console.error('Failed to process order after payment:', error)
+      toast.error('Payment completed but order processing failed. Please contact support.')
     }
   }
+
 
   // Handle payment error
   const handlePaymentError = (error: any) => {
     console.error('Payment failed:', error)
     toast.error('Payment failed. Please try again.')
 
-    // Reset payment state but keep order
+    // Reset payment state but keep order draft and cart intact
     setShowPayment(false)
     // Don't clear currentOrder so user can retry payment
+    // Don't clear cart - user can modify and try again
   }
 
   // Handle payment cancel
   const handlePaymentCancel = () => {
     setShowPayment(false)
     // Keep currentOrder so user can retry payment
-    toast.info('Payment cancelled. You can retry payment from your order history.')
+    // Keep cart intact - user can modify and try again
+    toast.info('Payment cancelled. You can modify your order and try again.')
   }
 
   // Retry function for status notification
@@ -543,10 +719,7 @@ export default function CustomerDashboard() {
     })
 
     // Switch to cart tab
-    const cartTab = document.querySelector('[value="cart"]') as HTMLElement
-    if (cartTab) {
-      cartTab.click()
-    }
+    setActiveTab('cart')
 
     toast.success(`Added ${order.items.length} item(s) to cart for reordering`)
   }
@@ -647,13 +820,7 @@ export default function CustomerDashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    // Switch to cart tab
-                    const cartTab = document.querySelector('[value="cart"]') as HTMLElement
-                    if (cartTab) {
-                      cartTab.click()
-                    }
-                  }}
+                  onClick={() => setActiveTab('cart')}
                   className="border-ump-navy/20 hover:bg-ump-navy/5 transition-premium shadow-sm hover:shadow-md font-medium cursor-pointer"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
@@ -696,7 +863,7 @@ export default function CustomerDashboard() {
           </div>
         )}
 
-        <Tabs defaultValue="menu" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 glass-effect p-1 h-auto gap-2 shadow-modern rounded-modern-lg">
             <TabsTrigger value="menu" className="rounded-modern data-[state=active]:bg-ump-blue data-[state=active]:text-white transition-premium py-3 font-medium flex items-center gap-2">
               <Utensils className="w-4 h-4" />
@@ -1432,6 +1599,30 @@ export default function CustomerDashboard() {
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6 animate-fade-in-up">
+            {/* Orders Header with Refresh */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h2 className="text-3xl font-bold text-luxury">Order History</h2>
+                    <Badge className="bg-green-100 text-green-800 border-green-200 animate-pulse">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                      Live
+                    </Badge>
+                  </div>
+                  <p className="text-ump-gray">Track your orders in real-time</p>
+                </div>
+              </div>
+              <Button
+                onClick={retryDataLoad}
+                variant="outline"
+                className="flex items-center gap-2 border-ump-navy/20 hover:bg-ump-navy/5"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Refresh
+              </Button>
+            </div>
+
             {/* Order Statistics */}
             {orderHistory.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

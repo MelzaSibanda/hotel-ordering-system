@@ -110,6 +110,7 @@ export default function CashierDashboard() {
   const [cashierSales, setCashierSales] = useState<Sale[]>([])
   const [loadingSales, setLoadingSales] = useState(false)
   const [error, setError] = useState("")
+  const [posLocked, setPosLocked] = useState(false)
 
   // Fetch menu on component mount
   useEffect(() => {
@@ -247,6 +248,11 @@ export default function CashierDashboard() {
   }
 
   const processOrder = async () => {
+    if (posLocked) {
+      toast.error('POS is locked. Shift has been closed.')
+      return
+    }
+
     if (cart.length === 0) {
       toast.error('Please add items to cart')
       return
@@ -373,8 +379,25 @@ export default function CashierDashboard() {
       return
     }
 
+    // Backend validation: Check if all sales are properly recorded
     setLoading(true)
     try {
+      // Validate shift closure with backend
+      const validationResponse = await api.request('/pos/shift/validate-close', {
+        method: 'POST',
+        body: JSON.stringify({
+          shiftId: currentShift.id,
+          totalSales: shiftSales,
+          totalOrders: orderCount
+        })
+      })
+
+      if (!validationResponse.valid) {
+        toast.error(`Cannot close shift: ${validationResponse.reason}`)
+        return
+      }
+
+      // Proceed with shift closure
       await api.request('/pos/shift/close', {
         method: 'POST',
         body: JSON.stringify({
@@ -384,11 +407,20 @@ export default function CashierDashboard() {
         })
       })
 
-      toast.success('Shift closed successfully')
+      toast.success('Shift closed successfully. Logging out...')
+
+      // Clear shift data and lock POS
       setCurrentShift(null)
       setShiftStartTime(null)
       setShiftSales(0)
       setOrderCount(0)
+      setPosLocked(true)
+
+      // Logout the cashier
+      setTimeout(() => {
+        logout()
+      }, 2000) // Give user time to see the success message
+
     } catch (error) {
       console.error('Error closing shift:', error)
       toast.error('Failed to close shift')
@@ -414,12 +446,24 @@ export default function CashierDashboard() {
         })
       })
 
-      toast.success('Cash up completed successfully')
-      setShowCashUp(false)
-      fetchCurrentShift() // Refresh shift data
-
       if (type === 'end_shift') {
-        setCurrentShift(null) // Clear current shift
+        toast.success('End of shift cash up completed. Logging out...')
+
+        // Clear shift data and logout for end of shift
+        setCurrentShift(null)
+        setShiftStartTime(null)
+        setShiftSales(0)
+        setOrderCount(0)
+        setShowCashUp(false)
+
+        // Logout the cashier
+        setTimeout(() => {
+          logout()
+        }, 2000) // Give user time to see the success message
+      } else {
+        toast.success('Mid-shift cash up completed successfully')
+        setShowCashUp(false)
+        fetchCurrentShift() // Refresh shift data for mid-shift
       }
     } catch (error) {
       console.error('Error performing cash up:', error)
@@ -538,6 +582,7 @@ export default function CashierDashboard() {
               <h1 className="text-2xl">Cashier POS</h1>
               <p className="text-gray-600">
                 Shift {currentShift?.shiftNumber} • {profile?.name}
+                {posLocked && <span className="ml-2 text-red-600 font-semibold">(POS LOCKED)</span>}
               </p>
             </div>
           </div>
@@ -633,12 +678,14 @@ export default function CashierDashboard() {
                   <TabsContent key={category} value={category} className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {items.map(item => (
-                        <Card 
-                          key={item.id} 
-                          className={`cursor-pointer transition-colors hover:bg-gray-50 ${
-                            !item.isAvailable ? 'opacity-50' : ''
+                        <Card
+                          key={item.id}
+                          className={`transition-colors ${
+                            posLocked ? 'cursor-not-allowed opacity-50' :
+                            !item.isAvailable ? 'opacity-50' :
+                            'cursor-pointer hover:bg-gray-50'
                           }`}
-                          onClick={() => item.isAvailable && addToCart(item)}
+                          onClick={() => !posLocked && item.isAvailable && addToCart(item)}
                         >
                           <CardContent className="p-4">
                             <h3 className="font-medium">{item.name}</h3>
@@ -857,9 +904,9 @@ export default function CashierDashboard() {
                   onClick={processOrder}
                   className="w-full"
                   size="lg"
-                  disabled={loading || cart.length === 0}
+                  disabled={loading || cart.length === 0 || posLocked}
                 >
-                  {loading ? 'Processing...' : `Process Order - R${total.toFixed(2)}`}
+                  {posLocked ? 'POS Locked - Shift Closed' : loading ? 'Processing...' : `Process Order - R${total.toFixed(2)}`}
                 </Button>
               </CardContent>
             </Card>

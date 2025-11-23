@@ -1346,7 +1346,7 @@ export default function StoresDashboard() {
                         </TableCell>
                         <TableCell>
                           <span className={item.currentStock <= item.minStock ? 'text-red-600 font-semibold' : ''}>
-                            {item.currentStock} {item.unit}
+                            {item.currentStock.toFixed(2)} {item.unit}
                           </span>
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">
@@ -1544,7 +1544,7 @@ export default function StoresDashboard() {
                             ) : (
                               inventory.map(invItem => (
                                 <SelectItem key={invItem.id} value={invItem.id}>
-                                  {invItem.name} - Stock: {invItem.currentStock} {invItem.unit} • R{invItem.unitCost.toFixed(2)}
+                                  {invItem.name} - Stock: {invItem.currentStock.toFixed(2)} {invItem.unit} • R{invItem.unitCost.toFixed(2)}
                                 </SelectItem>
                               ))
                             )}
@@ -2000,7 +2000,7 @@ export default function StoresDashboard() {
                         <SelectContent>
                           {inventory.map(item => (
                             <SelectItem key={item.id} value={item.id}>
-                              {item.name} - Stock: {item.currentStock} {item.unit}
+                              {item.name} - Stock: {item.currentStock.toFixed(2)} {item.unit}
                             </SelectItem>
                           ))}
                         </SelectContent>

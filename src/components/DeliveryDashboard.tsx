@@ -36,6 +36,8 @@ interface Order {
   assignedAt: string | null
   specialInstructions: string
   orderType: string
+  deliveryAddress?: string
+  tableNumber?: string
 }
 
 interface DeliveryAssignment {
@@ -64,9 +66,10 @@ export default function DeliveryDashboard() {
   const loadOrders = async () => {
     try {
       const data = await api.request('/orders')
-      // Delivery staff see ready and out_for_delivery orders
-      const deliveryOrders = data.orders.filter((order: Order) => 
-        ['ready', 'out_for_delivery'].includes(order.status)
+      // Delivery staff see ready and out_for_delivery orders that are delivery type only
+      const deliveryOrders = data.orders.filter((order: Order) =>
+        ['ready', 'out_for_delivery'].includes(order.status) &&
+        order.orderType === 'delivery'
       )
       setOrders(deliveryOrders)
     } catch (error) {
@@ -336,8 +339,22 @@ export default function DeliveryDashboard() {
                                   </div>
                                 )}
                                 <div><strong>Email:</strong> {order.customerInfo?.email || 'N/A'}</div>
+                                {order.customerInfo?.roomNumber && (
+                                  <div><strong>Room:</strong> {order.customerInfo.roomNumber}</div>
+                                )}
                               </div>
                             </div>
+
+                            {/* Delivery Address */}
+                            {order.deliveryAddress && (
+                              <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                                <h4 className="font-medium mb-2 flex items-center text-blue-800">
+                                  <MapPin className="w-4 h-4 mr-2" />
+                                  Delivery Address
+                                </h4>
+                                <p className="text-sm text-blue-700">{order.deliveryAddress}</p>
+                              </div>
+                            )}
 
                             {/* Order Items */}
                             <div>
@@ -437,8 +454,22 @@ export default function DeliveryDashboard() {
                                 </div>
                               )}
                               <div><strong>Email:</strong> {order.customerInfo?.email || 'N/A'}</div>
+                              {order.customerInfo?.roomNumber && (
+                                <div><strong>Room:</strong> {order.customerInfo.roomNumber}</div>
+                              )}
                             </div>
                           </div>
+
+                          {/* Delivery Address */}
+                          {order.deliveryAddress && (
+                            <div className="bg-purple-50 p-3 rounded border border-purple-200">
+                              <h4 className="font-medium mb-2 flex items-center text-purple-800">
+                                <MapPin className="w-4 h-4 mr-2" />
+                                Delivery Address
+                              </h4>
+                              <p className="text-sm text-purple-700">{order.deliveryAddress}</p>
+                            </div>
+                          )}
 
                           {/* Order Summary */}
                           <div>

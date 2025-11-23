@@ -406,19 +406,24 @@ export default function KitchenDashboard() {
   const markReady = async (orderId: string) => {
     setProcessingOrder(orderId)
     setError('')
-    
+
     try {
-      // Update order status first (main functionality)
+      // Import the new InventoryService
+      const { InventoryService } = await import('../services/inventory/InventoryService')
+
+      const inventoryService = new InventoryService()
+
+      // Process ingredients using the new transaction-safe service
+      await processOrderIngredients(orderId)
+
+      // Only mark order as ready if inventory deduction succeeded
       await updateOrderStatus(orderId, 'ready')
-      
-      // Process ingredients in background (don't block the UI)
-      processOrderIngredients(orderId).catch(error => {
-        console.warn('Background ingredient processing failed:', error.message)
-      })
-      
+
+      setSuccess(`Order marked as ready and inventory updated successfully`)
+
     } catch (error) {
       console.error('Failed to mark order ready:', error)
-      setError('Failed to mark order ready. Please try again.')
+      setError('Failed to mark order ready. Please check inventory levels and try again.')
     } finally {
       setProcessingOrder(null)
     }
@@ -428,54 +433,24 @@ export default function KitchenDashboard() {
     const order = orders.find(o => o.id === orderId)
     if (!order) return
 
-    console.log(`🔄 Processing ingredients for order ${orderId}...`)
+    console.log(`🔄 Processing ingredients for order ${orderId} using transaction-safe service...`)
 
-    for (const item of order.items) {
-      try {
-        // Get recipe from Firestore
-        const recipe = await recipeOperations.getRecipe(item.menuItemId)
+    // Import the InventoryService
+    const { InventoryService } = await import('../services/inventory/InventoryService')
+    const inventoryService = new InventoryService()
 
-        if (recipe && 'ingredients' in recipe && Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
-          // Process ingredients in parallel for this item
-          const promises = (recipe.ingredients as Ingredient[]).map(async (ingredient: Ingredient) => {
-            const totalQuantityNeeded = ingredient.quantity * (item.quantity || 1)
+    // Create order items for the inventory service
+    const orderItems = order.items.map(item => ({
+      menuItemId: item.menuItemId,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      specialInstructions: item.specialInstructions,
+      selectedExtras: item.selectedExtras
+    }))
 
-            try {
-              // Get the inventory item to check its unit
-              const inventoryItem = inventoryItems.find(inv => inv.id === ingredient.inventoryId)
-              if (!inventoryItem) {
-                console.warn(`❌ Inventory item not found for ${ingredient.name}`)
-                return { success: false, ingredient: ingredient.name, error: 'Inventory item not found' }
-              }
-
-              // Convert quantity to inventory item's unit if needed
-              let quantityToDeduct = totalQuantityNeeded
-              if (ingredient.unit !== inventoryItem.unit) {
-                try {
-                  quantityToDeduct = convertUnits(totalQuantityNeeded, ingredient.unit, inventoryItem.unit)
-                  console.log(`🔄 Converted ${totalQuantityNeeded} ${ingredient.unit} to ${quantityToDeduct.toFixed(2)} ${inventoryItem.unit} for ${ingredient.name}`)
-                } catch (conversionError) {
-                  console.warn(`❌ Unit conversion failed for ${ingredient.name}:`, conversionError)
-                  return { success: false, ingredient: ingredient.name, error: 'Unit conversion failed' }
-                }
-              }
-
-              await inventoryOperations.decrementStock(ingredient.inventoryId, quantityToDeduct)
-              console.log(`✅ Deducted ${quantityToDeduct.toFixed(2)} ${inventoryItem.unit} of ${ingredient.name}`)
-              return { success: true, ingredient: ingredient.name }
-            } catch (error) {
-              console.warn(`❌ Failed to deduct ${ingredient.name}:`, error instanceof Error ? error.message : String(error))
-              return { success: false, ingredient: ingredient.name, error: error instanceof Error ? error.message : String(error) }
-            }
-          })
-
-          // Wait for all ingredients of this item
-          await Promise.allSettled(promises)
-        }
-      } catch (error) {
-        console.warn(`No recipe or error for ${item.name}:`, error instanceof Error ? error.message : String(error))
-      }
-    }
+    // Use the new inventory service to deduct stock and record usage
+    await inventoryService.deductStockForOrder(orderItems)
 
     console.log(`✅ Ingredient processing completed for order ${orderId}`)
   }
@@ -492,14 +467,42 @@ export default function KitchenDashboard() {
 
   const getPreparationTime = (kitchenStartedAt: string | null) => {
     if (!kitchenStartedAt) return null
-    
+
     const now = new Date()
     const started = new Date(kitchenStartedAt)
     const diffMinutes = Math.floor((now.getTime() - started.getTime()) / (1000 * 60))
-    
+
     if (diffMinutes < 1) return 'Just started'
     if (diffMinutes === 1) return '1 minute'
     return `${diffMinutes} minutes`
+  }
+
+  const getCountdownTime = (kitchenStartedAt: string | null, estimatedTime: number) => {
+    if (!kitchenStartedAt) return null
+
+    const now = new Date()
+    const started = new Date(kitchenStartedAt)
+    const elapsedMinutes = Math.floor((now.getTime() - started.getTime()) / (1000 * 60))
+    const remainingMinutes = estimatedTime - elapsedMinutes
+
+    if (remainingMinutes > 0) {
+      return `${remainingMinutes} min left`
+    } else if (remainingMinutes === 0) {
+      return 'Time up!'
+    } else {
+      const overtime = Math.abs(remainingMinutes)
+      return `${overtime} min over`
+    }
+  }
+
+  const isOvertime = (kitchenStartedAt: string | null, estimatedTime: number) => {
+    if (!kitchenStartedAt) return false
+
+    const now = new Date()
+    const started = new Date(kitchenStartedAt)
+    const elapsedMinutes = Math.floor((now.getTime() - started.getTime()) / (1000 * 60))
+
+    return elapsedMinutes >= estimatedTime
   }
 
   const getOrderPriority = (order: Order) => {
@@ -559,6 +562,17 @@ export default function KitchenDashboard() {
 
   const pendingOrders = orders.filter((order: any) => order.status === 'pending')
   const preparingOrders = orders.filter((order: any) => order.status === 'preparing')
+
+  // Real-time countdown updates every second for preparing orders
+  const [countdownTrigger, setCountdownTrigger] = useState(0)
+  useEffect(() => {
+    if (preparingOrders.length > 0) {
+      const countdownInterval = setInterval(() => {
+        setCountdownTrigger(prev => prev + 1)
+      }, 1000)
+      return () => clearInterval(countdownInterval)
+    }
+  }, [preparingOrders.length])
 
   // Check if user has inventory access
   const hasInventoryAccess = profile?.role && ['kitchen', 'stores', 'supervisor', 'admin'].includes(profile.role)
@@ -922,25 +936,34 @@ export default function KitchenDashboard() {
               <div className="space-y-4">
                 {preparingOrders
                   .sort((a, b) => new Date(b.kitchenStartedAt || b.createdAt).getTime() - new Date(a.kitchenStartedAt || a.createdAt).getTime())
-                  .map(order => (
-                    <Card key={order.id} className="glass-effect shadow-modern rounded-modern-lg interactive-card border-2 border-ump-blue/30 bg-gradient-to-br from-ump-blue/5 to-ump-indigo/5 animate-scale-in">
-                      <CardHeader className="pb-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <CardTitle className="text-lg flex items-center gap-3 mb-2">
-                              <div className="p-2 rounded-modern bg-ump-blue/10">
-                                <span className="text-sm font-bold text-ump-blue">#{order.id.slice(-8)}</span>
-                              </div>
-                              <Badge className="bg-ump-blue/10 text-ump-blue border-ump-blue/20">
-                                Cooking
-                              </Badge>
-                            </CardTitle>
-                            <CardDescription className="flex items-center gap-2 text-ump-gray-600">
-                              <span className="font-medium">{order.customerInfo?.name || 'Guest'}</span>
-                              <span>•</span>
-                              <span>Cooking for {getPreparationTime(order.kitchenStartedAt)}</span>
-                            </CardDescription>
-                          </div>
+                  .map(order => {
+                    const overtime = isOvertime(order.kitchenStartedAt, order.estimatedTime)
+                    return (
+                      <Card
+                        key={order.id}
+                        className={`glass-effect shadow-modern rounded-modern-lg interactive-card border-2 ${
+                          overtime
+                            ? 'border-red-500 bg-gradient-to-br from-red-50 to-red-100 animate-pulse'
+                            : 'border-ump-blue/30 bg-gradient-to-br from-ump-blue/5 to-ump-indigo/5'
+                        } animate-scale-in`}
+                      >
+                        <CardHeader className="pb-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <CardTitle className="text-lg flex items-center gap-3 mb-2">
+                                <div className={`p-2 rounded-modern ${overtime ? 'bg-red-100' : 'bg-ump-blue/10'}`}>
+                                  <span className={`text-sm font-bold ${overtime ? 'text-red-700' : 'text-ump-blue'}`}>#{order.id.slice(-8)}</span>
+                                </div>
+                                <Badge className={`${overtime ? 'bg-red-100 text-red-800 border-red-300' : 'bg-ump-blue/10 text-ump-blue border-ump-blue/20'}`}>
+                                  {overtime ? 'OVERTIME' : 'Cooking'}
+                                </Badge>
+                              </CardTitle>
+                              <CardDescription className="flex items-center gap-2 text-ump-gray-600">
+                                <span className="font-medium">{order.customerInfo?.name || 'Guest'}</span>
+                                <span>•</span>
+                                <span>Cooking for {getPreparationTime(order.kitchenStartedAt)}</span>
+                              </CardDescription>
+                            </div>
                           <div className="flex flex-col items-end gap-2">
                             <Button
                               onClick={() => markReady(order.id)}
@@ -991,16 +1014,22 @@ export default function KitchenDashboard() {
                           )}
                           
                           <div className="flex justify-between items-center pt-3 border-t">
-                            <span className="text-sm text-blue-600 font-medium">
-                              <Timer className="w-4 h-4 inline mr-1" />
-                              Target: {order.estimatedTime} min
-                            </span>
+                            <div className="flex flex-col gap-1">
+                              <span className={`text-sm font-medium ${overtime ? 'text-red-600' : 'text-blue-600'}`}>
+                                <Timer className="w-4 h-4 inline mr-1" />
+                                {getCountdownTime(order.kitchenStartedAt, order.estimatedTime)}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Target: {order.estimatedTime} min
+                              </span>
+                            </div>
                             <span className="font-bold">R{order.totalAmount?.toFixed(2) ?? '0.00'}</span>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                    )
+                  })}
               </div>
             )}
           </div>
@@ -1231,7 +1260,7 @@ export default function KitchenDashboard() {
                             <div>
                               <span className="font-medium">{item.name}</span>
                               <span className="text-sm text-gray-500 ml-2">
-                                (Current: {item.currentStock} {item.unit})
+                                (Current: {item.currentStock.toFixed(2)} {item.unit})
                               </span>
                             </div>
                             <Button

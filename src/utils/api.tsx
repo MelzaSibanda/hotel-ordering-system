@@ -292,6 +292,7 @@ export type MenuItem = {
   prepTime?: number
   ingredients?: string[]
   allergens?: string[]
+  requiresCooking?: boolean
 }
 
 export type Category = {

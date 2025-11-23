@@ -5,6 +5,7 @@ import { Badge } from './ui/badge'
 import { Alert, AlertDescription } from './ui/alert'
 import { Loader2, CreditCard, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
 import { toast } from "sonner"
+const defaultLogo = "/src/assets/logo.png"
 
 interface YocoPaymentProps {
   amount: number
@@ -79,34 +80,12 @@ export default function YocoPayment({
       // Open payment link in new tab/window
       window.open(paymentUrl, '_blank')
 
-      // Simulate payment processing (in real implementation, you'd need webhooks)
-      setTimeout(() => {
-        // For demo purposes, simulate successful payment after 5 seconds
-        setPaymentStatus('success')
-        setIsLoading(false)
+      // In a real implementation, payment status would be updated via webhooks
+      // For now, we'll rely on real-time listeners to detect payment completion
+      // The success message will only appear when payment status actually changes to 'paid'
 
-        // Call success callback with payment data
-        onSuccess({
-          id: `yoco_live_${Date.now()}`,
-          amount: amount,
-          currency: 'ZAR',
-          status: 'completed',
-          orderId: orderId,
-          timestamp: new Date().toISOString(),
-          paymentMethod: 'card',
-          metadata: {
-            yocoPaymentId: `yoco_live_${Date.now()}`,
-            customerEmail,
-            customerName,
-            firstName,
-            lastName,
-            paymentUrl: paymentUrl,
-            liveMode: true
-          }
-        })
-
-        toast.success('Payment completed successfully! Please check your email for confirmation.')
-      }, 5000)
+      // Keep processing status until real payment confirmation
+      // Note: In production, this would be handled by Yoco webhooks
 
     } catch (error: any) {
       console.error('❌ Payment initialization error:', error)
@@ -153,13 +132,22 @@ export default function YocoPayment({
   return (
     <Card className={`transition-all duration-300 ${getStatusColor()}`}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src={defaultLogo}
+              alt="Egumeni Eats"
+              className="w-10 h-10 rounded-lg object-contain"
+            />
+            <div>
+              <CardTitle className="text-xl">Egumeni Eats</CardTitle>
+              <CardDescription>
+                Complete your payment securely with Yoco
+              </CardDescription>
+            </div>
+          </div>
           {getStatusIcon()}
-          Secure Payment
-        </CardTitle>
-        <CardDescription>
-          Complete your payment securely with Yoco
-        </CardDescription>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -196,12 +184,12 @@ export default function YocoPayment({
             </div>
             {paymentStatus === 'processing' && (
               <p className="text-sm text-gray-600">
-                Processing your payment... Please complete the payment in the popup window.
+                Payment window opened. Please complete your payment in the popup window. This page will update automatically when payment is confirmed.
               </p>
             )}
             {paymentStatus === 'success' && (
               <p className="text-sm text-green-600">
-                Payment completed successfully! Your order is being processed.
+                Payment confirmed! Processing your order...
               </p>
             )}
             {paymentStatus === 'failed' && (
@@ -247,6 +235,7 @@ export default function YocoPayment({
 
         {/* Security Notice */}
         <div className="text-center text-xs text-gray-500 mt-4">
+          <p>🍽️ Secure payment powered by Egumeni Eats</p>
           <p>🔒 Your payment information is secure and encrypted</p>
           <p>Powered by Yoco • PCI DSS Compliant</p>
         </div>

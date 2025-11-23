@@ -39,6 +39,7 @@ export interface MenuItem {
   ingredients?: string[]
   extras?: string[]
   allergens?: string[]
+  requiresCooking?: boolean
 }
 
 export interface Category {
